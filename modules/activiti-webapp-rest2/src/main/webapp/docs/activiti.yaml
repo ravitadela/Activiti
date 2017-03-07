@@ -6189,16 +6189,6 @@ definitions:
         type: "array"
         items:
           $ref: "#/definitions/Message"
-      itemDefinitions:
-        type: "object"
-        additionalProperties:
-          $ref: "#/definitions/ItemDefinition"
-      mainProcess:
-        $ref: "#/definitions/Process"
-      messageFlows:
-        type: "object"
-        additionalProperties:
-          $ref: "#/definitions/MessageFlow"
       dataStores:
         type: "object"
         additionalProperties:
@@ -6207,6 +6197,16 @@ definitions:
         type: "object"
         additionalProperties:
           type: "string"
+      mainProcess:
+        $ref: "#/definitions/Process"
+      messageFlows:
+        type: "object"
+        additionalProperties:
+          $ref: "#/definitions/MessageFlow"
+      itemDefinitions:
+        type: "object"
+        additionalProperties:
+          $ref: "#/definitions/ItemDefinition"
   CommentRequest:
     type: "object"
     properties:

@@ -6938,10 +6938,16 @@
             "$ref" : "#/definitions/Message"
           }
         },
-        "itemDefinitions" : {
+        "dataStores" : {
           "type" : "object",
           "additionalProperties" : {
-            "$ref" : "#/definitions/ItemDefinition"
+            "$ref" : "#/definitions/DataStore"
+          }
+        },
+        "namespaces" : {
+          "type" : "object",
+          "additionalProperties" : {
+            "type" : "string"
           }
         },
         "mainProcess" : {
@@ -6953,16 +6959,10 @@
             "$ref" : "#/definitions/MessageFlow"
           }
         },
-        "dataStores" : {
+        "itemDefinitions" : {
           "type" : "object",
           "additionalProperties" : {
-            "$ref" : "#/definitions/DataStore"
-          }
-        },
-        "namespaces" : {
-          "type" : "object",
-          "additionalProperties" : {
-            "type" : "string"
+            "$ref" : "#/definitions/ItemDefinition"
           }
         }
       }
