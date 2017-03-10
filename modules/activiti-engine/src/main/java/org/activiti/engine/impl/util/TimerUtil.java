@@ -22,6 +22,9 @@ import org.activiti.engine.impl.persistence.entity.JobEntity;
 import org.activiti.engine.impl.persistence.entity.TimerJobEntity;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 /**
  * @author Joram Barrez
@@ -155,8 +158,8 @@ public class TimerUtil {
 
   public static String prepareRepeat(String dueDate) {
     if (dueDate.startsWith("R") && dueDate.split("/").length == 2) {
-      SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-      return dueDate.replace("/", "/" + sdf.format(Context.getProcessEngineConfiguration().getClock().getCurrentTime()) + "/");
+      DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
+      return dueDate.replace("/", "/" + fmt.print(new DateTime(Context.getProcessEngineConfiguration().getClock().getCurrentTime(), DateTimeZone.UTC)) + "/");
     }
     return dueDate;
   }

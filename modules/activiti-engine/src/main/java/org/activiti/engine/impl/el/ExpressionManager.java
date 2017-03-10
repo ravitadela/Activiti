@@ -13,6 +13,7 @@
 package org.activiti.engine.impl.el;
 
 import java.util.Map;
+import java.util.Properties;
 
 import javax.el.ArrayELResolver;
 import javax.el.BeanELResolver;
@@ -68,7 +69,7 @@ public class ExpressionManager {
   public ExpressionManager(Map<Object, Object> beans, boolean initFactory) {
     // Use the ExpressionFactoryImpl in activiti build in version of juel,
     // with parametrised method expressions enabled
-    expressionFactory = new ExpressionFactoryImpl();
+    expressionFactory = new ExpressionFactoryImpl((Properties)null, new ActivitiTypeConverter());
     this.beans = beans;
   }
 
