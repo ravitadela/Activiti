@@ -13,16 +13,17 @@
 
 package org.activiti.rest.service.api.runtime.task;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -41,21 +42,18 @@ import org.springframework.web.bind.annotation.RestController;
  * @author Frederik Heremans
  */
 @RestController
-@Api(tags = { "Tasks" }, description = "Manage Tasks")
+@Api(tags = { "Tasks" }, description = "Manage Tasks", authorizations = { @Authorization(value = "basicAuth") })
 public class TaskVariableDataResource extends TaskVariableBaseResource {
 
-	 @ApiImplicitParams(
-	          @ApiImplicitParam(name = "scope", dataType = "string", value = "Scope of variable to be returned. When local, only task-local variable value is returned. When global, only variable value from the task’s parent execution-hierarchy are returned. When the parameter is omitted, a local variable will be returned if it exists, otherwise a global variable.", paramType = "query")
-	  )
-	  @ApiResponses(value = {
-	          @ApiResponse(code = 200, message = "Indicates the task was found and the requested variables are returned."),
-	          @ApiResponse(code = 404, message = "Indicates the requested task was not found or the task doesn’t have a variable with the given name (in the given scope). Status message provides additional information.")
-	  })
-	  @ApiOperation(value = "Get the binary data for a variable", tags = {"Tasks"}, nickname = "geTaskVariableData",
-	          notes = "The response body contains the binary value of the variable. When the variable is of type binary, the content-type of the response is set to application/octet-stream, regardless of the content of the variable or the request accept-type header. In case of serializable, application/x-java-serialized-object is used as content-type.")
+  @ApiResponses(value = {
+      @ApiResponse(code = 200, message = "Indicates the task was found and the requested variables are returned."),
+      @ApiResponse(code = 404, message = "Indicates the requested task was not found or the task doesn’t have a variable with the given name (in the given scope). Status message provides additional information.")
+  })
+  @ApiOperation(value = "Get the binary data for a variable", tags = {"Tasks"}, nickname = "geTaskVariableData",
+  notes = "The response body contains the binary value of the variable. When the variable is of type binary, the content-type of the response is set to application/octet-stream, regardless of the content of the variable or the request accept-type header. In case of serializable, application/x-java-serialized-object is used as content-type.")
   @RequestMapping(value = "/runtime/tasks/{taskId}/variables/{variableName}/data", method = RequestMethod.GET, produces = "application/json")
   public @ResponseBody
-  byte[] getVariableData(@ApiParam(name = "taskId") @PathVariable("taskId") String taskId,@ApiParam(name = "variableName") @PathVariable("variableName") String variableName,@ApiParam(hidden=true) @RequestParam(value = "scope", required = false) String scope,
+  byte[] getVariableData(@ApiParam(name = "taskId", value="The id of the task to get a variable data for.") @PathVariable("taskId") String taskId,@ApiParam(name = "variableName", value="The name of the variable to get data for. Only variables of type binary and serializable can be used. If any other type of variable is used, a 404 is returned.") @PathVariable("variableName") String variableName,@ApiParam(hidden=true) @RequestParam(value = "scope", required = false) String scope,
       HttpServletRequest request, HttpServletResponse response) {
 
     try {
