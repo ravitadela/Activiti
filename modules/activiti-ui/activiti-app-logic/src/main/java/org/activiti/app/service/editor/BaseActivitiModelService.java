@@ -43,8 +43,8 @@ public class BaseActivitiModelService {
   @Autowired
   protected IdentityService identityService;
 
-  protected Model getModel(Long modelId, boolean checkRead, boolean checkEdit) {
-    Model model = modelRepository.findOne(modelId);
+  protected Model getModel(String modelId, boolean checkRead, boolean checkEdit) {
+    Model model = modelRepository.get(modelId);
 
     if (model == null) {
       NotFoundException processNotFound = new NotFoundException("No model found with the given id: " + modelId);
@@ -55,10 +55,10 @@ public class BaseActivitiModelService {
     return model;
   }
 
-  protected ModelHistory getModelHistory(Long modelId, Long modelHistoryId, boolean checkRead, boolean checkEdit) {
+  protected ModelHistory getModelHistory(String modelId, String modelHistoryId, boolean checkRead, boolean checkEdit) {
     // Check if the user has read-rights on the process-model in order to fetch history
     Model model = getModel(modelId, checkRead, checkEdit);
-    ModelHistory modelHistory = modelHistoryRepository.findOne(modelHistoryId);
+    ModelHistory modelHistory = modelHistoryRepository.get(modelHistoryId);
 
     // Check if history corresponds to the current model and is not deleted
     if (modelHistory == null || modelHistory.getRemovalDate() != null || !modelHistory.getModelId().equals(model.getId())) {

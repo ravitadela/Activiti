@@ -13,34 +13,12 @@
 package org.activiti.app.conf;
 
 import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
 import java.util.Properties;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
-
-import org.activiti.engine.ActivitiException;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.ejb.HibernatePersistence;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
-import org.springframework.orm.hibernate4.HibernateExceptionTranslator;
-import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.orm.jpa.JpaVendorAdapter;
-import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
-import org.springframework.transaction.support.TransactionTemplate;
-
-import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import liquibase.Liquibase;
 import liquibase.database.Database;
@@ -48,6 +26,27 @@ import liquibase.database.DatabaseConnection;
 import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
+
+import org.activiti.engine.ActivitiException;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.mybatis.spring.SqlSessionFactoryBean;
+import org.mybatis.spring.SqlSessionTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.io.ResourceLoader;
+import org.springframework.core.io.support.ResourcePatternUtils;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.lookup.JndiDataSourceLookup;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 @Configuration
 @EnableJpaRepositories({ "org.activiti.app.repository" })
@@ -58,8 +57,53 @@ public class DatabaseConfiguration {
   
   protected static final String LIQUIBASE_CHANGELOG_PREFIX = "ACT_DE_";
 
-  @Inject
-  private Environment env;
+  @Autowired
+  protected Environment env;
+
+  @Autowired
+  protected ResourceLoader resourceLoader;
+  
+  protected static Properties databaseTypeMappings = getDefaultDatabaseTypeMappings();
+  
+  public static final String DATABASE_TYPE_H2 = "h2";
+  public static final String DATABASE_TYPE_HSQL = "hsql";
+  public static final String DATABASE_TYPE_MYSQL = "mysql";
+  public static final String DATABASE_TYPE_ORACLE = "oracle";
+  public static final String DATABASE_TYPE_POSTGRES = "postgres";
+  public static final String DATABASE_TYPE_MSSQL = "mssql";
+  public static final String DATABASE_TYPE_DB2 = "db2";
+
+  public static Properties getDefaultDatabaseTypeMappings() {
+      Properties databaseTypeMappings = new Properties();
+      databaseTypeMappings.setProperty("H2", DATABASE_TYPE_H2);
+      databaseTypeMappings.setProperty("HSQL Database Engine", DATABASE_TYPE_HSQL);
+      databaseTypeMappings.setProperty("MySQL", DATABASE_TYPE_MYSQL);
+      databaseTypeMappings.setProperty("Oracle", DATABASE_TYPE_ORACLE);
+      databaseTypeMappings.setProperty("PostgreSQL", DATABASE_TYPE_POSTGRES);
+      databaseTypeMappings.setProperty("Microsoft SQL Server", DATABASE_TYPE_MSSQL);
+      databaseTypeMappings.setProperty(DATABASE_TYPE_DB2, DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/NT", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/NT64", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2 UDP", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/LINUX", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/LINUX390", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/LINUXX8664", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/LINUXZ64", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/LINUXPPC64", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/400 SQL", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/6000", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2 UDB iSeries", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/AIX64", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/HPUX", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/HP64", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/SUN", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/SUN64", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/PTX", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2/2", DATABASE_TYPE_DB2);
+      databaseTypeMappings.setProperty("DB2 UDB AS400", DATABASE_TYPE_DB2);
+      return databaseTypeMappings;
+  }
 
   @Bean
   public DataSource dataSource() {
@@ -156,47 +200,50 @@ public class DatabaseConfiguration {
     }
   }
 
-  @Bean(name = "entityManagerFactory")
-  public EntityManagerFactory entityManagerFactory() {
-    log.info("Configuring EntityManager");
-    LocalContainerEntityManagerFactoryBean lcemfb = new LocalContainerEntityManagerFactoryBean();
-    lcemfb.setPersistenceProvider(new HibernatePersistence());
-    lcemfb.setPersistenceUnitName("persistenceUnit");
-    lcemfb.setDataSource(dataSource());
-    lcemfb.setJpaDialect(new HibernateJpaDialect());
-    lcemfb.setJpaVendorAdapter(jpaVendorAdapter());
-
-    Properties jpaProperties = new Properties();
-    jpaProperties.put("hibernate.cache.use_second_level_cache", false);
-    jpaProperties.put("hibernate.generate_statistics", env.getProperty("hibernate.generate_statistics", Boolean.class, false));
-    lcemfb.setJpaProperties(jpaProperties);
-
-    lcemfb.setPackagesToScan("org.activiti.app.domain");
-    lcemfb.afterPropertiesSet();
-    return lcemfb.getObject();
-  }
 
   @Bean
-  public JpaVendorAdapter jpaVendorAdapter() {
-    HibernateJpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
-    jpaVendorAdapter.setShowSql(env.getProperty("hibernate.show_sql", Boolean.class, false));
-    jpaVendorAdapter.setDatabasePlatform(env.getProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect"));
-    return jpaVendorAdapter;
-  }
-
-  @Bean
-  public HibernateExceptionTranslator hibernateExceptionTranslator() {
-    return new HibernateExceptionTranslator();
-  }
-
-  @Bean(name = "transactionManager")
   public PlatformTransactionManager annotationDrivenTransactionManager() {
-    JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
-    jpaTransactionManager.setEntityManagerFactory(entityManagerFactory());
-    return jpaTransactionManager;
+      DataSourceTransactionManager dataSourceTransactionManager = new DataSourceTransactionManager();
+      dataSourceTransactionManager.setDataSource(dataSource());
+      return dataSourceTransactionManager;
   }
 
-  @Bean(name = "liquibase")
+  @Bean
+  public SqlSessionFactory sqlSessionFactory() {
+      SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
+      DataSource dataSource = dataSource();
+      sqlSessionFactoryBean.setDataSource(dataSource);
+      String databaseType = initDatabaseType(dataSource);
+      if (databaseType == null) {
+          throw new ActivitiException("couldn't deduct database type");
+      }
+
+      try {
+          Properties properties = new Properties();
+          properties.put("prefix", env.getProperty("datasource.prefix", ""));
+          properties.put("blobType", "BLOB");
+          properties.put("boolValue", "TRUE");
+
+          properties.load(this.getClass().getClassLoader().getResourceAsStream("org/activiti/db/properties/" + databaseType + ".properties"));
+
+          sqlSessionFactoryBean.setConfigurationProperties(properties);
+          sqlSessionFactoryBean
+                  .setMapperLocations(ResourcePatternUtils.getResourcePatternResolver(resourceLoader).getResources("classpath:/META-INF/modeler-mybatis-mappings/*.xml"));
+          sqlSessionFactoryBean.afterPropertiesSet();
+          return sqlSessionFactoryBean.getObject();
+      } catch (Exception e) {
+          throw new ActivitiException("Could not create sqlSessionFactory", e);
+      }
+
+  }
+
+
+  @Bean(destroyMethod = "clearCache") // destroyMethod: see https://github.com/mybatis/old-google-code-issues/issues/778
+  public SqlSessionTemplate SqlSessionTemplate() {
+      return new SqlSessionTemplate(sqlSessionFactory());
+  }
+
+  @Bean
   public Liquibase liquibase() {
     log.info("Configuring Liquibase");
     
@@ -215,14 +262,33 @@ public class DatabaseConfiguration {
     }
   }
 
-  @Bean
-  public JdbcTemplate jdbcTemplate() {
-    return new JdbcTemplate(dataSource());
-  }
+  protected String initDatabaseType(DataSource dataSource) {
+      String databaseType = null;
+      Connection connection = null;
+      try {
+          connection = dataSource.getConnection();
+          DatabaseMetaData databaseMetaData = connection.getMetaData();
+          String databaseProductName = databaseMetaData.getDatabaseProductName();
+          log.info("database product name: '{}'", databaseProductName);
+          databaseType = databaseTypeMappings.getProperty(databaseProductName);
+          if (databaseType == null) {
+              throw new ActivitiException("couldn't deduct database type from database product name '" + databaseProductName + "'");
+          }
+          log.info("using database type: {}", databaseType);
 
-  @Bean
-  public TransactionTemplate transactionTemplate() {
-    return new TransactionTemplate(annotationDrivenTransactionManager());
+      } catch (SQLException e) {
+          log.error("Exception while initializing Database connection", e);
+      } finally {
+          try {
+              if (connection != null) {
+                  connection.close();
+              }
+          } catch (SQLException e) {
+              log.error("Exception while closing the Database connection", e);
+          }
+      }
+
+      return databaseType;
   }
 
 }

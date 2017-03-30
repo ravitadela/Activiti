@@ -12,8 +12,6 @@
  */
 package org.activiti.app.security;
 
-import org.activiti.app.constant.GroupIds;
-import org.activiti.app.service.exception.NotPermittedException;
 import org.activiti.engine.identity.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;

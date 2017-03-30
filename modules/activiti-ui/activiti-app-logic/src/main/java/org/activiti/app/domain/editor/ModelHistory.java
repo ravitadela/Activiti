@@ -14,32 +14,21 @@ package org.activiti.app.domain.editor;
 
 import java.util.Date;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
-@Entity
-@Table(name="ACT_DE_MODEL_HISTORY")
 public class ModelHistory extends AbstractModel {
 
-	@Column(name="model_id")
-	protected Long modelId;
+	protected String modelId;
 	
-	@Column(name="removal_date")
-    @Temporal(TemporalType.TIMESTAMP)
     protected Date removalDate;
 	
 	public ModelHistory() {
 		super();
 	}
 
-	public Long getModelId() {
+	public String getModelId() {
 		return modelId;
 	}
 
-	public void setModelId(Long modelId) {
+	public void setModelId(String modelId) {
 		this.modelId = modelId;
 	}
 	

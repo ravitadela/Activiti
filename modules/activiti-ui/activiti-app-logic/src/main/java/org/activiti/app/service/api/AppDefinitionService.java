@@ -14,12 +14,16 @@ package org.activiti.app.service.api;
 
 import java.util.List;
 
+import org.activiti.app.model.editor.AppDefinitionRepresentation;
+import org.activiti.app.model.editor.AppDefinitionSaveRepresentation;
+import org.activiti.app.model.editor.AppDefinitionUpdateResultRepresentation;
 import org.activiti.engine.identity.User;
 
 public interface AppDefinitionService {
+	
 
 	List<AppDefinitionServiceRepresentation> getAppDefinitions();
-	
+
 	List<AppDefinitionServiceRepresentation> getDeployableAppDefinitions(User user);
 
 }
