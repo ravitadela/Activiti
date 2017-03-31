@@ -158,8 +158,8 @@ public class TimerUtil {
 
   public static String prepareRepeat(String dueDate) {
     if (dueDate.startsWith("R") && dueDate.split("/").length == 2) {
-      DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
-      return dueDate.replace("/", "/" + fmt.print(new DateTime(Context.getProcessEngineConfiguration().getClock().getCurrentTime(), DateTimeZone.UTC)) + "/");
+      DateTimeFormatter format = ISODateTimeFormat.dateTime();
+      return dueDate.replace("/", "/" + format.print(new DateTime(Context.getProcessEngineConfiguration().getClock().getCurrentTime(), DateTimeZone.UTC)) + "/");
     }
     return dueDate;
   }

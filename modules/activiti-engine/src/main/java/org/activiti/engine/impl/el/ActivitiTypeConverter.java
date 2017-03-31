@@ -14,14 +14,14 @@ public class ActivitiTypeConverter extends TypeConverterImpl {
     private static final long serialVersionUID = 1L;
 
     protected String coerceToString(Object value) {
-        String coercedValue = null;
+        String coercedVal = null;
         if (value instanceof Date) {
             Date date = (Date)value;
-            DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
-            coercedValue =  fmt.print(new DateTime(date, DateTimeZone.UTC));
+            DateTimeFormatter format = ISODateTimeFormat.dateTime();
+            coercedVal =  format.print(new DateTime(date, DateTimeZone.UTC));
         } else {
-            coercedValue = super.coerceToString(value);
+            coercedVal = super.coerceToString(value);
         }
-        return coercedValue;
+        return coercedVal;
     }
 }
