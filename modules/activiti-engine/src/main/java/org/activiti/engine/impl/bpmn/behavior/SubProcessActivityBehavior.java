@@ -20,8 +20,10 @@ import org.activiti.bpmn.model.ValuedDataObject;
 import org.activiti.engine.ActivitiException;
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.impl.context.Context;
+import org.activiti.engine.impl.interceptor.CommandContext;
 import org.activiti.engine.impl.persistence.entity.ExecutionEntity;
 import org.activiti.engine.impl.util.CollectionUtil;
+import org.activiti.engine.impl.util.ProcessInstanceHelper;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -66,8 +68,12 @@ public class SubProcessActivityBehavior extends AbstractBpmnActivityBehavior {
     if (dataObjectVars != null) {
       executionEntity.setVariablesLocal(dataObjectVars);
     }
+    
+    CommandContext commandContext = Context.getCommandContext();
+    ProcessInstanceHelper processInstanceHelper = commandContext.getProcessEngineConfiguration().getProcessInstanceHelper();
+    processInstanceHelper.processAvailableEventSubProcesses(executionEntity, subProcess, commandContext);
 
-    ExecutionEntity startSubProcessExecution = Context.getCommandContext().getExecutionEntityManager()
+    ExecutionEntity startSubProcessExecution = commandContext.getExecutionEntityManager()
         .createChildExecution(executionEntity);
     startSubProcessExecution.setCurrentFlowElement(startElement);
     Context.getAgenda().planContinueProcessOperation(startSubProcessExecution);

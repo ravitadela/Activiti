@@ -418,7 +418,11 @@ public class ExecutionEntityManagerImpl extends AbstractEntityManager<ExecutionE
   
   @Override
   public void deleteExecutionAndRelatedData(ExecutionEntity executionEntity, String deleteReason, boolean cancel) {
-    getHistoryManager().recordActivityEnd(executionEntity, deleteReason);
+    if(executionEntity.isProcessInstanceType()){
+    	 getHistoryManager().recordProcessInstanceEnd(executionEntity.getProcessInstanceId(), deleteReason, executionEntity.getActivityId());
+    }else{
+	getHistoryManager().recordActivityEnd(executionEntity, deleteReason);
+    }
     deleteDataForExecution(executionEntity, deleteReason, cancel);
     delete(executionEntity);
   }
@@ -643,6 +647,14 @@ public class ExecutionEntityManagerImpl extends AbstractEntityManager<ExecutionE
       List<EventSubscriptionEntity> eventSubscriptions = eventSubscriptionEntityManager.findEventSubscriptionsByExecution(executionEntity.getId());
       for (EventSubscriptionEntity eventSubscription : eventSubscriptions) {
         eventSubscriptionEntityManager.delete(eventSubscription);
+        
+        if (MessageEventSubscriptionEntity.EVENT_TYPE.equals(eventSubscription.getEventType())) {
+            if (getEventDispatcher().isEnabled()) {
+                getEventDispatcher().dispatchEvent(ActivitiEventBuilder.createMessageEvent(ActivitiEventType.ACTIVITY_MESSAGE_CANCELLED,
+                        eventSubscription.getActivityId(), eventSubscription.getEventName(), null, eventSubscription.getExecutionId(),
+                        eventSubscription.getProcessInstanceId(), eventSubscription.getProcessDefinitionId()));
+            }
+        }
       }
     }
     

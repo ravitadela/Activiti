@@ -69,10 +69,11 @@ public class EventSubProcessMessageStartEventActivityBehavior extends AbstractBp
     
     StartEvent startEvent = (StartEvent) execution.getCurrentFlowElement();
     if (startEvent.isInterrupting()) {  
-      List<ExecutionEntity> childExecutions = executionEntityManager.findChildExecutionsByParentExecutionId(executionEntity.getParentId());
-      for (ExecutionEntity childExecution : childExecutions) {
-        if (childExecution.getId().equals(executionEntity.getId()) == false) {
-          executionEntityManager.deleteExecutionAndRelatedData(childExecution, 
+    	List<ExecutionEntity> childExecutions = executionEntityManager.collectChildren(executionEntity.getParent());
+    	for (int i = childExecutions.size() - 1; i >= 0; i--) {
+    		ExecutionEntity childExecutionEntity = childExecutions.get(i);
+    		 if (!childExecutionEntity.isEnded() && !childExecutionEntity.getId().equals(executionEntity.getId())) {
+          executionEntityManager.deleteExecutionAndRelatedData(childExecutionEntity, 
               DeleteReason.EVENT_SUBPROCESS_INTERRUPTING + "(" + startEvent.getId() + ")", false);
         }
       }
@@ -87,10 +88,12 @@ public class EventSubProcessMessageStartEventActivityBehavior extends AbstractBp
       }
     }
     
-    executionEntity.setCurrentFlowElement((SubProcess) executionEntity.getCurrentFlowElement().getParentContainer());
-    executionEntity.setScope(true);
+    ExecutionEntity newSubProcessExecution = executionEntityManager.createChildExecution(executionEntity.getParent());
+    newSubProcessExecution.setCurrentFlowElement((SubProcess) executionEntity.getCurrentFlowElement().getParentContainer());
+    newSubProcessExecution.setEventScope(false);
+    newSubProcessExecution.setScope(true);
     
-    ExecutionEntity outgoingFlowExecution = executionEntityManager.createChildExecution(executionEntity);
+    ExecutionEntity outgoingFlowExecution = executionEntityManager.createChildExecution(newSubProcessExecution);
     outgoingFlowExecution.setCurrentFlowElement(startEvent);
     
     leave(outgoingFlowExecution);
