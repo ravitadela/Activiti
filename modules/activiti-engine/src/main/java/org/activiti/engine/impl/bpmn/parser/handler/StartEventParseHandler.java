@@ -19,7 +19,10 @@ import org.activiti.bpmn.model.EventDefinition;
 import org.activiti.bpmn.model.EventSubProcess;
 import org.activiti.bpmn.model.Message;
 import org.activiti.bpmn.model.MessageEventDefinition;
+import org.activiti.bpmn.model.Signal;
+import org.activiti.bpmn.model.SignalEventDefinition;
 import org.activiti.bpmn.model.StartEvent;
+import org.activiti.bpmn.model.TimerEventDefinition;
 import org.activiti.engine.impl.bpmn.parser.BpmnParse;
 import org.activiti.engine.impl.util.CollectionUtil;
 
@@ -52,6 +55,21 @@ public class StartEventParseHandler extends AbstractActivityBpmnParseHandler<Sta
         
         } else if (eventDefinition instanceof ErrorEventDefinition) {
           element.setBehavior(bpmnParse.getActivityBehaviorFactory().createEventSubProcessErrorStartEventActivityBehavior(element));
+        } else if (eventDefinition instanceof SignalEventDefinition) {
+            SignalEventDefinition signalDefinition = (SignalEventDefinition) eventDefinition;
+            Signal signal = null;
+            if (bpmnParse.getBpmnModel().containsSignalId(signalDefinition.getSignalRef())) {
+                signal = bpmnParse.getBpmnModel().getSignal(signalDefinition.getSignalRef());
+            }
+
+            element.setBehavior(bpmnParse.getActivityBehaviorFactory().createEventSubProcessSignalStartEventActivityBehavior(
+                    element, signalDefinition, signal));
+
+        } else if (eventDefinition instanceof TimerEventDefinition) {
+            TimerEventDefinition timerEventDefinition = (TimerEventDefinition) eventDefinition;
+            element.setBehavior(bpmnParse.getActivityBehaviorFactory().createEventSubProcessTimerStartEventActivityBehavior(
+                    element, timerEventDefinition));
+
         }
       }
       
