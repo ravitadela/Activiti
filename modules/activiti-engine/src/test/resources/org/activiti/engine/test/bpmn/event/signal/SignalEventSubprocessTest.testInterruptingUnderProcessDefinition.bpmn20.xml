@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="Examples">
+  <signal id="signal1" name="signal1" activiti:scope="global"></signal>
+  <process id="process" isExecutable="true">
+    <startEvent id="theStart"></startEvent>
+    <sequenceFlow id="sequenceFlow-68ce4778-c0d7-452a-960c-0ea9486c85b2" sourceRef="theStart" targetRef="task"></sequenceFlow>
+    <userTask id="task" name="Task1"></userTask>
+    <sequenceFlow id="sequenceFlow-d7099a9f-bef8-4c20-8875-b2567b621859" sourceRef="task" targetRef="theEnd"></sequenceFlow>
+    <endEvent id="theEnd"></endEvent>
+    <subProcess id="null" name="subProcess" triggeredByEvent="true">
+      <userTask id="eventSubProcessTask" name="Task2"></userTask>
+      <startEvent id="eventProcessStart" activiti:isInterrupting="true">
+        <signalEventDefinition signalRef="signal1"></signalEventDefinition>
+      </startEvent>
+      <endEvent id="eventSubProcessEnd"></endEvent>
+      <sequenceFlow id="sequenceFlow-7cb0301d-ecf2-4f25-8ffa-1b9d75aa008f" sourceRef="eventProcessStart" targetRef="eventSubProcessTask"></sequenceFlow>
+      <sequenceFlow id="sequenceFlow-97844595-e6b4-47d9-b1bc-eb7992021ff6" sourceRef="eventSubProcessTask" targetRef="eventSubProcessEnd"></sequenceFlow>
+    </subProcess>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_process">
+    <bpmndi:BPMNPlane bpmnElement="process" id="BPMNPlane_process">
+      <bpmndi:BPMNShape bpmnElement="theStart" id="BPMNShape_theStart">
+        <omgdc:Bounds height="30.0" width="30.0" x="0.0" y="15.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="task" id="BPMNShape_task">
+        <omgdc:Bounds height="60.0" width="100.0" x="80.0" y="0.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="theEnd" id="BPMNShape_theEnd">
+        <omgdc:Bounds height="28.0" width="28.0" x="230.0" y="15.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="null" id="BPMNShape_null">
+        <omgdc:Bounds height="100.0" width="300.0" x="285.0" y="75.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="eventSubProcessTask" id="BPMNShape_eventSubProcessTask">
+        <omgdc:Bounds height="60.0" width="100.0" x="365.0" y="95.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="eventProcessStart" id="BPMNShape_eventProcessStart">
+        <omgdc:Bounds height="30.0" width="30.0" x="305.0" y="110.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="eventSubProcessEnd" id="BPMNShape_eventSubProcessEnd">
+        <omgdc:Bounds height="28.0" width="28.0" x="535.0" y="111.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="sequenceFlow-d7099a9f-bef8-4c20-8875-b2567b621859" id="BPMNEdge_sequenceFlow-d7099a9f-bef8-4c20-8875-b2567b621859">
+        <omgdi:waypoint x="180.0" y="30.0"></omgdi:waypoint>
+        <omgdi:waypoint x="192.0" y="30.0"></omgdi:waypoint>
+        <omgdi:waypoint x="192.0" y="30.0"></omgdi:waypoint>
+        <omgdi:waypoint x="230.00258803958215" y="29.269180999238795"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sequenceFlow-7cb0301d-ecf2-4f25-8ffa-1b9d75aa008f" id="BPMNEdge_sequenceFlow-7cb0301d-ecf2-4f25-8ffa-1b9d75aa008f">
+        <omgdi:waypoint x="335.0" y="125.0"></omgdi:waypoint>
+        <omgdi:waypoint x="365.0" y="125.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sequenceFlow-68ce4778-c0d7-452a-960c-0ea9486c85b2" id="BPMNEdge_sequenceFlow-68ce4778-c0d7-452a-960c-0ea9486c85b2">
+        <omgdi:waypoint x="30.0" y="30.0"></omgdi:waypoint>
+        <omgdi:waypoint x="42.0" y="30.0"></omgdi:waypoint>
+        <omgdi:waypoint x="42.0" y="30.000000000000007"></omgdi:waypoint>
+        <omgdi:waypoint x="80.0" y="30.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sequenceFlow-97844595-e6b4-47d9-b1bc-eb7992021ff6" id="BPMNEdge_sequenceFlow-97844595-e6b4-47d9-b1bc-eb7992021ff6">
+        <omgdi:waypoint x="465.0" y="125.0"></omgdi:waypoint>
+        <omgdi:waypoint x="535.0" y="125.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
